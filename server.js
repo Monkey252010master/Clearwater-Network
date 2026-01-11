@@ -19,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 // --------------------------------------------------
 // DISCORD BOT CLIENT
 // --------------------------------------------------
+let botReady = false;
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -30,6 +32,7 @@ client.login(config.botToken);
 
 client.once('ready', () => {
   console.log(`Bot logged in as ${client.user.tag}`);
+  botReady = true;
 });
 
 // --------------------------------------------------
@@ -79,10 +82,14 @@ passport.deserializeUser((obj, done) => done(null, obj));
 // STAFF CHECK USING BOT
 // --------------------------------------------------
 async function isUserStaff(discordId) {
+  if (!botReady) {
+    console.log("Bot not ready yet — skipping staff check");
+    return false;
+  }
+
   try {
     const guild = await client.guilds.fetch(config.guildID);
     const member = await guild.members.fetch(discordId);
-
     return member.roles.cache.has(config.staffRoleID);
   } catch (err) {
     console.error("Role check failed:", err);
@@ -184,9 +191,9 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------------------------------------------
-// START SERVER
+// START SERVER (RAILWAY SAFE)
 // --------------------------------------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is listening on http://localhost:${PORT}`);
+  console.log(`Server is listening on port ${PORT}`);
 });
