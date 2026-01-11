@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= title %> | Clearwater Network</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="/" class="nav-logo">Clearwater Network</a>
+      <a href="/cad" class="nav-link">CAD</a>
+
+      <% if (isStaff) { %>
+        <a href="/staff" class="nav-link">Staff Dashboard</a>
+      <% } %>
+    </div>
+
+    <div class="nav-right">
+      <% if (user) { %>
+        <div class="nav-user">
+          <img
+            src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png"
+            class="nav-avatar"
+            onerror="this.src='/default-avatar.png'"
+          />
+          <span class="nav-username"><%= user.username %></span>
+        </div>
+        <a href="/logout" class="btn btn-primary nav-btn">Logout</a>
+      <% } else { %>
+        <a href="/auth/discord" class="btn btn-primary nav-btn">Login</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <main class="page-content">
+    <%- body %>
+  </main>
+</body>
+</html>

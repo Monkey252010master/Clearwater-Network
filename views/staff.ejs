@@ -1,0 +1,133 @@
+<div class="staff-dashboard modern-layout">
+
+  <!-- LEFT COLUMN -->
+  <section class="staff-column staff-left modern-card">
+    <div class="card-section">
+      <p class="greeting">Hey, <strong><%= user ? user.username : 'Guest' %></strong></p>
+      <p class="status">Status: <span class="offline">Offline</span></p>
+      <button class="btn primary">Start Shift</button>
+    </div>
+
+    <div class="card-section">
+      <p class="activity">0.00 / 1.5 hours (0%) this activity wave</p>
+    </div>
+
+    <div class="card-section toolbox">
+      <h3>Toolbox</h3>
+      <button class="btn secondary">Manage LOA</button>
+      <button class="btn secondary">Actions</button>
+      <button class="btn secondary">Manage Session</button>
+      <button class="btn secondary">Priority Requests</button>
+      <button class="btn secondary">Resources</button>
+    </div>
+  </section>
+
+  <!-- CENTER COLUMN -->
+  <section class="staff-column staff-center modern-card">
+    <h2>Create New Log</h2>
+
+    <form action="/staff/create-log" method="POST" id="logForm" class="modern-form">
+
+      <label>User *</label>
+      <input name="username" id="usernameInput" type="text" placeholder="Enter Roblox username" required />
+
+      <label>Roblox Player ID</label>
+      <input name="robloxId" id="robloxIdInput" type="text" placeholder="Auto-filled" />
+
+      <label>Type</label>
+      <select name="type">
+        <option>Warning</option>
+        <option>Active Ban Bolo</option>
+        <option>Kick</option>
+        <option>Ban</option>
+      </select>
+
+      <label>Reason</label>
+      <textarea name="reason" id="reasonInput" placeholder="Enter reason"></textarea>
+
+      <label>Previous Punishments</label>
+      <input name="previous" id="previousInput" type="number" value="0" readonly />
+
+      <label>Your Roblox Name</label>
+      <input name="staffRoblox" type="text" placeholder="Enter your Roblox username" required />
+
+      <input type="hidden" name="staffDiscord" value="<%= user.username %>" />
+
+      <button type="submit" class="btn primary full">Create Log</button>
+    </form>
+  </section>
+
+  <!-- RIGHT COLUMN -->
+  <section class="staff-column staff-right modern-card">
+    <h2>Punishment Logs</h2>
+
+    <input type="text" class="search-bar" placeholder="Search logs..." />
+
+    <% logs.forEach(log => { %>
+      <div class="log-card">
+        <div class="log-header">
+          <span class="log-type"><%= log.type %></span>
+        </div>
+
+        <div class="log-body">
+          <p><strong>User:</strong> <%= log.username %></p>
+          <p><strong>Roblox ID:</strong> <%= log.robloxId %></p>
+          <p><strong>Reason:</strong> <%= log.reason %></p>
+          <p><strong>Previous Punishments:</strong> <%= log.previous %></p>
+          <p class="timestamp"><%= log.created %></p>
+        </div>
+
+        <div class="log-footer">
+          • Submitted by <strong><%= log.moderator %></strong>  
+          (Roblox: <%= log.staffRoblox || 'Unknown' %>)
+        </div>
+      </div>
+    <% }) %>
+  </section>
+
+</div>
+
+<script>
+  // Auto-fill Roblox ID
+  document.getElementById('usernameInput').addEventListener('blur', async () => {
+    const username = document.getElementById('usernameInput').value;
+    if (!username) return;
+
+    try {
+      const res = await fetch('https://users.roblox.com/v1/usernames/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
+      });
+
+      const data = await res.json();
+      const match = data.data?.find(u => u.name.toLowerCase() === username.toLowerCase());
+
+      document.getElementById('robloxIdInput').value = match?.id || '';
+    } catch {
+      document.getElementById('robloxIdInput').value = '';
+    }
+  });
+
+  // Auto-fill previous punishments
+  document.getElementById('usernameInput').addEventListener('blur', () => {
+    const username = document.getElementById('usernameInput').value.toLowerCase();
+    const logs = <%- JSON.stringify(logs) %>;
+    const count = logs.filter(log => log.username.toLowerCase() === username).length;
+    document.getElementById('previousInput').value = count;
+  });
+</script>
+
+<script>
+  const searchInput = document.querySelector('.search-bar');
+  const logCards = document.querySelectorAll('.log-card');
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+
+    logCards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+</script>

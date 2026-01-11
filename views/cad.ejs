@@ -1,0 +1,32 @@
+<h1>Clearwater CAD System</h1>
+
+<h2>Active Calls</h2>
+<ul>
+  <% calls.forEach(call => { %>
+    <li>
+      <strong>Call <%= call.id %>:</strong> <%= call.description %>
+      — <%= call.location %>
+    </li>
+  <% }) %>
+</ul>
+
+<h2>BOLOs</h2>
+<ul>
+  <% bolos.forEach(bolo => { %>
+    <li><%= bolo.type %>: <%= bolo.details %></li>
+  <% }) %>
+</ul>
+
+<h2>Warrants</h2>
+<ul>
+  <% warrants.forEach(w => { %>
+    <li><%= w.name %> — <%= w.reason %></li>
+  <% }) %>
+</ul>
+
+<h2>Units</h2>
+<ul>
+  <% Object.keys(units).forEach(unit => { %>
+    <li><%= unit %>: <%= units[unit].status %></li>
+  <% }) %>
+</ul>
