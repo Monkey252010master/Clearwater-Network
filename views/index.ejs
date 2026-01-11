@@ -1,2 +1,23 @@
 <h1>Welcome to Clearwater Network</h1>
-<p>Your dashboard is now connected to a real server.</p>
+
+<% if (user) { %>
+  <p>Logged in as <%= user.username %></p>
+
+  <% if (isStaff) { %>
+    <a href="/staff" class="btn">Staff Dashboard</a>
+  <% } %>
+
+  <% if (hasCAD) { %>
+    <% if (hasCAD) { %>
+  <a href="/cad" class="btn cad-btn">CAD System</a>
+<% } %>
+  <% } %>
+
+  <a href="/logout" class="btn logout-btn">Logout</a>
+
+<% } else { %>
+  <a href="/auth/discord" class="discord-login-btn">
+  <img src="https://cdn.jsdelivr.net/gh/discordjs/website-assets/logos/discord-logo-blue.svg" alt="Discord Logo">
+  <span>Login with Discord</span>
+</a>
+<% } %>

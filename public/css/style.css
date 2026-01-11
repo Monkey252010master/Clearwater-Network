@@ -260,3 +260,30 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+/* --------------------------------------------------
+    Discord Login Buttion
+-------------------------------------------------- */
+   DISCORD LOGIN BUTTON
+.discord-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background-color: #5865F2; /* Discord Blurple */
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+.discord-login-btn img {
+  width: 24px;
+  height: 24px;
+}
+
+.discord-login-btn:hover {
+  background-color: #4752C4;
+  transform: translateY(-2px);
+}

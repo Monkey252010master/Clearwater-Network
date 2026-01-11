@@ -80,36 +80,51 @@ passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
 // --------------------------------------------------
-// STAFF CHECK USING BOT
+// ROLE CHECKS
 // --------------------------------------------------
 async function isUserStaff(discordId) {
-  if (!botReady) {
-    console.log("Bot not ready yet — skipping staff check");
-    return false;
-  }
+  if (!botReady) return false;
 
   try {
     const guild = await client.guilds.fetch(config.guildID);
     const member = await guild.members.fetch(discordId);
     return member.roles.cache.has(config.staffRoleID);
   } catch (err) {
-    console.error("Role check failed:", err);
+    console.error("Staff role check failed:", err);
+    return false;
+  }
+}
+
+async function isUserCAD(discordId) {
+  if (!botReady) return false;
+
+  try {
+    const guild = await client.guilds.fetch(config.guildID);
+    const member = await guild.members.fetch(discordId);
+    return member.roles.cache.has(config.cadRoleID);
+  } catch (err) {
+    console.error("CAD role check failed:", err);
     return false;
   }
 }
 
 // --------------------------------------------------
-// STAFF-ONLY MIDDLEWARE
+// MIDDLEWARE
 // --------------------------------------------------
 async function requireStaff(req, res, next) {
-  if (!req.isAuthenticated()) {
-    return res.redirect('/auth/discord');
-  }
+  if (!req.isAuthenticated()) return res.redirect('/auth/discord');
 
   const staff = await isUserStaff(req.user.id);
-  if (!staff) {
-    return res.render('noaccess', { title: 'Access Denied' });
-  }
+  if (!staff) return res.render('noaccess', { title: 'Access Denied' });
+
+  next();
+}
+
+async function requireCAD(req, res, next) {
+  if (!req.isAuthenticated()) return res.redirect('/auth/discord');
+
+  const cadAccess = await isUserCAD(req.user.id);
+  if (!cadAccess) return res.render('noaccess', { title: 'Access Denied' });
 
   next();
 }
@@ -120,10 +135,11 @@ async function requireStaff(req, res, next) {
 app.use(async (req, res, next) => {
   res.locals.user = req.user;
   res.locals.isStaff = false;
+  res.locals.hasCAD = false;
 
   if (req.user) {
-    const staff = await isUserStaff(req.user.id);
-    res.locals.isStaff = staff;
+    res.locals.isStaff = await isUserStaff(req.user.id);
+    res.locals.hasCAD = await isUserCAD(req.user.id);
   }
 
   next();
@@ -146,20 +162,8 @@ app.get('/', (req, res) => {
   res.render('index', { title: 'Home' });
 });
 
-// DASHBOARD (after login)
-app.get('/dashboard', (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect('/auth/discord');
-  }
-
-  res.render('dashboard', {
-    title: 'Dashboard',
-    user: req.user
-  });
-});
-
-// CAD PAGE (staff only)
-app.get('/cad', requireStaff, (req, res) => {
+// CAD PAGE (CAD role only)
+app.get('/cad', requireCAD, (req, res) => {
   res.render('cad', { title: 'CAD System' });
 });
 
@@ -196,7 +200,11 @@ app.get('/auth/discord', passport.authenticate('discord'));
 app.get(
   '/auth/discord/callback',
   passport.authenticate('discord', { failureRedirect: '/' }),
-  (req, res) => {
+  async (req, res) => {
+    // Optional auto-redirect logic
+    if (await isUserStaff(req.user.id)) return res.redirect('/staff');
+    if (await isUserCAD(req.user.id)) return res.redirect('/cad');
+
     res.redirect('/');
   }
 );

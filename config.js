@@ -4,5 +4,6 @@ module.exports = {
   clientSecret: process.env.CLIENT_SECRET,
   callbackURL:  'https://clearwater-network.onrender.com/auth/discord/callback',
   guildID: process.env.GUILD_ID,
-  staffRoleID: process.env.STAFF_ROLE_ID
+  staffRoleID: process.env.STAFF_ROLE_ID,
+  cadRoleID: process.env.CAD_ROLE_ID
 };
