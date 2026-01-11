@@ -197,7 +197,7 @@ app.get(
   '/auth/discord/callback',
   passport.authenticate('discord', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('/dashboard');
+    res.redirect('/');
   }
 );
 
