@@ -202,8 +202,8 @@ app.get(
   passport.authenticate('discord', { failureRedirect: '/' }),
   async (req, res) => {
     // Optional auto-redirect logic
-    if (await isUserStaff(req.user.id)) return res.redirect('/staff');
-    if (await isUserCAD(req.user.id)) return res.redirect('/cad');
+    if (await isUserStaff(req.user.id)) return res.redirect('/');
+    if (await isUserCAD(req.user.id)) return res.redirect('/');
 
     res.redirect('/');
   }
