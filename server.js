@@ -64,13 +64,14 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new DiscordStrategy({
+passport.use(new DiscordStrategy(
+  {
     clientID: config.clientID,
     clientSecret: config.clientSecret,
     callbackURL: config.callbackURL,
     scope: ['identify']
   },
-  function(accessToken, refreshToken, profile, done) {
+  function (accessToken, refreshToken, profile, done) {
     return done(null, profile);
   }
 ));
@@ -145,6 +146,18 @@ app.get('/', (req, res) => {
   res.render('index', { title: 'Home' });
 });
 
+// DASHBOARD (after login)
+app.get('/dashboard', (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/auth/discord');
+  }
+
+  res.render('dashboard', {
+    title: 'Dashboard',
+    user: req.user
+  });
+});
+
 // CAD PAGE (staff only)
 app.get('/cad', requireStaff, (req, res) => {
   res.render('cad', { title: 'CAD System' });
@@ -179,10 +192,13 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
 // LOGIN
 app.get('/auth/discord', passport.authenticate('discord'));
 
+// CALLBACK
 app.get(
   '/auth/discord/callback',
   passport.authenticate('discord', { failureRedirect: '/' }),
-  (req, res) => res.redirect('/')
+  (req, res) => {
+    res.redirect('/dashboard');
+  }
 );
 
 // LOGOUT
@@ -191,7 +207,7 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------------------------------------------
-// START SERVER (RAILWAY SAFE)
+// START SERVER (Render Safe)
 // --------------------------------------------------
 const PORT = process.env.PORT || 1000;
 app.listen(PORT, () => {
