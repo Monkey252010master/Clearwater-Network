@@ -19,23 +19,23 @@
     </div>
 
     <div class="nav-right">
-      <% if (!user) { %>
-        <a href="/auth/discord" class="discord-login-btn">
-          <img src="https://cdn.discordapp.com/icons/81384788765712384/a_4b8e6f8e8e8e8e8e8e8e8e8e8e8e8e8e.gif?size=64" alt="Discord Logo">
-          <span>Login with Discord</span>
-        </a>
-      <% } else { %>
-        <div class="nav-user">
-          <img
-            src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png"
-            class="nav-avatar"
-            onerror="this.src='/default-avatar.png'"
-          />
-          <span class="nav-username"><%= user.username %></span>
-          <a href="/logout" class="btn secondary nav-btn">Logout</a>
-        </div>
-      <% } %>
+  <% if (!user) { %>
+    <a href="/auth/discord" class="discord-login-btn">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord Logo">
+      <span>Login with Discord</span>
+    </a>
+  <% } else { %>
+    <div class="nav-user">
+      <img
+        src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png"
+        class="nav-avatar"
+        onerror="this.src='/default-avatar.png'"
+      />
+      <span class="nav-username"><%= user.username %></span>
+      <a href="/logout" class="btn secondary nav-btn">Logout</a>
     </div>
+  <% } %>
+</div>
   </nav>
 
   <!-- PAGE CONTENT -->
