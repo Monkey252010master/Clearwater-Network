@@ -191,10 +191,12 @@ app.use(async (req, res, next) => {
   res.locals.user = req.user;
   res.locals.isStaff = false;
   res.locals.hasCAD = false;
+  res.locals.isHR = false;
 
   if (req.user) {
     res.locals.isStaff = await isUserStaff(req.user.id);
     res.locals.hasCAD = await isUserCAD(req.user.id);
+    res.locals.isHR = await isUserHR(req.user.id);
   }
 
   next();
