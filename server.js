@@ -38,18 +38,26 @@ client.once('ready', () => {
 // --------------------------------------------------
 // LOG STORAGE (JSON FILE)
 // --------------------------------------------------
+function getLogsFilePath() {
+  return path.join(__dirname, 'data', 'logs.json');
+}
+
 function loadLogs() {
-  const filePath = path.join(__dirname, 'data', 'logs.json');
+  const filePath = getLogsFilePath();
   if (!fs.existsSync(filePath)) return [];
   const raw = fs.readFileSync(filePath);
   return JSON.parse(raw);
 }
 
+function saveLogs(logs) {
+  const filePath = getLogsFilePath();
+  fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
+}
+
 function saveLog(newLog) {
-  const filePath = path.join(__dirname, 'data', 'logs.json');
   const logs = loadLogs();
   logs.unshift(newLog); // newest first
-  fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
+  saveLogs(logs);
 }
 
 // --------------------------------------------------
@@ -176,20 +184,87 @@ app.get('/staff', requireStaff, (req, res) => {
   });
 });
 
-// STAFF: CREATE LOG (POST)
+// STAFF: CREATE LOG (with auto-ban + pinned automation)
 app.post('/staff/create-log', requireStaff, (req, res) => {
+  let logs = loadLogs();
+
   const newLog = {
-    moderator: req.body.staffDiscord || req.user.username,
+    moderator: req.body.staffDiscord || (req.user && req.user.username) || "Unknown",
     staffRoblox: req.body.staffRoblox || "Unknown",
     username: req.body.username,
     robloxId: req.body.robloxId || "Unknown",
     type: req.body.type,
     reason: req.body.reason,
-    previous: req.body.previous || 0,
-    created: new Date().toLocaleString()
+    previous: Number(req.body.previous) || 0,
+    created: new Date().toLocaleString(),
+    pinned: false,
+    completed: false
   };
 
-  saveLog(newLog);
+  // Save the normal log
+  logs.unshift(newLog);
+
+  // Count previous logs (non-automation) for this user
+  const previousCount = logs.filter(
+    log =>
+      log.username &&
+      log.username.toLowerCase() === newLog.username.toLowerCase() &&
+      log.moderator !== "Automation"
+  ).length;
+
+  // If they hit 3 or more logs → auto-ban BOLO
+  if (previousCount >= 3) {
+    const autoLog = {
+      moderator: "Automation",
+      staffRoblox: "System",
+      username: newLog.username,
+      robloxId: newLog.robloxId,
+      type: "Active Ban Bolo",
+      reason: "Reached 3 previous punishments",
+      previous: previousCount,
+      created: new Date().toLocaleString(),
+      pinned: true,
+      completed: false
+    };
+
+    // Insert pinned log at very top
+    logs.unshift(autoLog);
+  }
+
+  saveLogs(logs);
+  res.redirect('/staff');
+});
+
+// STAFF: DELETE LOG
+app.post('/staff/delete-log/:index', requireStaff, (req, res) => {
+  const index = parseInt(req.params.index);
+  const logs = loadLogs();
+
+  if (index >= 0 && index < logs.length) {
+    logs.splice(index, 1);
+    saveLogs(logs);
+  }
+
+  res.redirect('/staff');
+});
+
+// STAFF: COMPLETE LOG (Active Ban Bolo -> Completed Ban Bolo)
+app.post('/staff/complete-log/:index', requireStaff, (req, res) => {
+  const index = parseInt(req.params.index);
+  const logs = loadLogs();
+
+  if (index >= 0 && index < logs.length) {
+    const log = logs[index];
+
+    // Only convert active BOLOs
+    if (log.type === "Active Ban Bolo") {
+      log.type = "Completed Ban Bolo";
+      log.completed = true;
+      log.pinned = false; // unpin if it was pinned
+    }
+  }
+
+  saveLogs(logs);
   res.redirect('/staff');
 });
 
@@ -201,10 +276,8 @@ app.get(
   '/auth/discord/callback',
   passport.authenticate('discord', { failureRedirect: '/' }),
   async (req, res) => {
-    // Optional auto-redirect logic
-    if (await isUserStaff(req.user.id)) return res.redirect('/');
-    if (await isUserCAD(req.user.id)) return res.redirect('/');
-
+    if (await isUserStaff(req.user.id)) return res.redirect('/staff');
+    if (await isUserCAD(req.user.id)) return res.redirect('/cad');
     res.redirect('/');
   }
 );
@@ -215,7 +288,7 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------------------------------------------
-// START SERVER (Render Safe)
+// START SERVER
 // --------------------------------------------------
 const PORT = process.env.PORT || 1000;
 app.listen(PORT, () => {

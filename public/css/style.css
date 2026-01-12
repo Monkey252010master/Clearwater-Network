@@ -316,3 +316,16 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* ACTIVE BAN BOLO GLOW */
+.log-card.active-bolo {
+  border: 2px solid #ff4d4d;
+  box-shadow: 0 0 15px #ff4d4d;
+}
+
+/* COMPLETED BAN BOLO STYLE */
+.log-card.completed-bolo {
+  border: 2px solid #4da6ff;
+  box-shadow: none;
+  opacity: 0.85;
+}

@@ -63,32 +63,57 @@
 
     <input type="text" class="search-bar" placeholder="Search logs..." />
 
-    <% logs.forEach(log => { %>
-      <div class="log-card">
-        <div class="log-header">
-          <span class="log-type"><%= log.type %></span>
+    <div class="log-list">
+      <% logs.forEach((log, index) => { %>
+
+        <div class="log-card 
+          <%= log.type === 'Active Ban Bolo' ? 'active-bolo' : '' %>
+          <%= log.type === 'Completed Ban Bolo' ? 'completed-bolo' : '' %>"
+          style="<%= log.pinned ? 'border-color:#ffcc00;background:#2a2d31;' : '' %>">
+
+          <% if (log.pinned) { %>
+            <div class="log-type" style="background:#ffcc00;color:black;">PINNED — AUTOMATION</div>
+          <% } else { %>
+            <div class="log-header">
+              <span class="log-type"><%= log.type %></span>
+            </div>
+          <% } %>
+
+          <div class="log-body">
+            <p><strong>User:</strong> <%= log.username %></p>
+            <p><strong>Roblox ID:</strong> <%= log.robloxId %></p>
+            <p><strong>Reason:</strong> <%= log.reason %></p>
+            <p><strong>Previous Punishments:</strong> <%= log.previous %></p>
+            <p class="timestamp"><%= log.created %></p>
+          </div>
+
+          <div class="log-footer">
+            • Submitted by <strong><%= log.moderator %></strong>
+            (Roblox: <%= log.staffRoblox || 'Unknown' %>)
+          </div>
+
+          <!-- DELETE BUTTON -->
+          <form action="/staff/delete-log/<%= index %>" method="POST" style="margin-top:10px;">
+            <button class="btn secondary" style="background:#d83c3e;color:white;">Delete</button>
+          </form>
+
+          <!-- COMPLETE BUTTON (only for active BOLOs) -->
+          <% if (log.type === "Active Ban Bolo") { %>
+            <form action="/staff/complete-log/<%= index %>" method="POST" style="margin-top:10px;">
+              <button class="btn secondary" style="background:#4da6ff;color:white;">Mark Completed</button>
+            </form>
+          <% } %>
+
         </div>
 
-        <div class="log-body">
-          <p><strong>User:</strong> <%= log.username %></p>
-          <p><strong>Roblox ID:</strong> <%= log.robloxId %></p>
-          <p><strong>Reason:</strong> <%= log.reason %></p>
-          <p><strong>Previous Punishments:</strong> <%= log.previous %></p>
-          <p class="timestamp"><%= log.created %></p>
-        </div>
-
-        <div class="log-footer">
-          • Submitted by <strong><%= log.moderator %></strong>  
-          (Roblox: <%= log.staffRoblox || 'Unknown' %>)
-        </div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
   </section>
 
 </div>
 
 <script>
-  // Auto-fill Roblox ID
+  // Auto-fill Roblox ID using Roblox API
   document.getElementById('usernameInput').addEventListener('blur', async () => {
     const username = document.getElementById('usernameInput').value;
     if (!username) return;
@@ -109,16 +134,17 @@
     }
   });
 
-  // Auto-fill previous punishments
+  // Auto-fill previous punishments from logs
   document.getElementById('usernameInput').addEventListener('blur', () => {
     const username = document.getElementById('usernameInput').value.toLowerCase();
     const logs = <%- JSON.stringify(logs) %>;
-    const count = logs.filter(log => log.username.toLowerCase() === username).length;
+    const count = logs.filter(log => log.username && log.username.toLowerCase() === username).length;
     document.getElementById('previousInput').value = count;
   });
 </script>
 
 <script>
+  // Search filter for logs
   const searchInput = document.querySelector('.search-bar');
   const logCards = document.querySelectorAll('.log-card');
 
