@@ -263,18 +263,6 @@ app.get('/staff', requireStaff, async (req, res) => {
   });
 });
 
-  // Pinned logs first
-  logs.sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-    return 0;
-  });
-
-  res.render('staff', {
-    title: 'Staff Dashboard',
-    logs
-  });
-
 // STAFF: CREATE LOG
 app.post('/staff/create-log', requireStaff, async (req, res) => {
   const { targetId, targetName, action, reason } = req.body;
@@ -291,67 +279,9 @@ app.post('/staff/create-log', requireStaff, async (req, res) => {
   res.redirect('/staff');
 });
 
-  // Count previous logs for this user (non-automation logs)
-  const previousCount = logs.filter(
-    log =>
-      log.username &&
-      log.username.toLowerCase() === newLog.username.toLowerCase() &&
-      log.moderator !== "Automation"
-  ).length;
-
-  // Auto-ban BOLO
-  if (previousCount >= 3) {
-    const autoLog = {
-      moderator: "Automation",
-      moderatorId: null,
-      moderatorAvatar: null,
-
-      username: newLog.username,
-      robloxId: newLog.robloxId,
-      type: "Active Ban Bolo",
-      reason: "Reached 3 previous punishments",
-      previous: previousCount,
-      created: new Date().toLocaleString(),
-      pinned: true,
-      completed: false,
-      completedBy: null,
-      completedById: null,
-      completedAt: null
-    };
-
-    logs.unshift(autoLog);
-  }
-
-  saveLogs(logs);
-  res.redirect('/staff');
-
-
 // STAFF: DELETE LOG
 app.post('/staff/delete-log/:id', requireHR, async (req, res) => {
   await deleteLogById(req.params.id);
-  res.redirect('/staff');
-});
-
-// STAFF: COMPLETE LOG (Active Ban Bolo -> Ban)
-app.post('/staff/complete-log/:index', requireStaff, (req, res) => {
-  const index = parseInt(req.params.index);
-  const logs = loadLogs();
-
-  if (index >= 0 && index < logs.length) {
-    const log = logs[index];
-
-    if (log.type === "Active Ban Bolo") {
-      log.type = "Ban";
-      log.completed = true;
-      log.pinned = false;
-
-      log.completedBy = req.user.username;
-      log.completedById = req.user.id;
-      log.completedAt = new Date().toLocaleString();
-    }
-  }
-
-  saveLogs(logs);
   res.redirect('/staff');
 });
 
@@ -370,9 +300,9 @@ app.get(
 );
 
 // HR
-app.get('/hr', requireHR, (req, res) => {
-  const activity = loadActivity().slice(0, 50);
-  const logs = loadLogs();
+app.get('/hr', requireHR, async (req, res) => {
+  const activity = loadActivity().slice(0, 50); // still JSON for now
+  const logs = await getRecentLogs(200);
 
   res.render('hr', {
     title: 'HR Dashboard',
