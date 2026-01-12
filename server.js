@@ -6,7 +6,7 @@ const expressLayouts = require('express-ejs-layouts');
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
+const FileStore = require('session-file-store')(session);
 const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
@@ -58,20 +58,18 @@ function saveLogs(logs) {
 // --------------------------------------------------
 // SESSION (MUST COME BEFORE PASSPORT)
 // --------------------------------------------------
-app.use(
-  session({
-    store: new SQLiteStore({
-      db: 'sessions.sqlite',
-      dir: './data'
-    }),
-    secret: 'supersecretkey',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    }
-  })
-);
+app.use(session({
+  store: new FileStore({
+    path: './data/sessions',
+    retries: 1
+  }),
+  secret: 'supersecretkey',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  }
+}));
 
 // --------------------------------------------------
 // PASSPORT
@@ -95,7 +93,6 @@ passport.use(
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
-
 // --------------------------------------------------
 // ROLE CHECKS
 // --------------------------------------------------
