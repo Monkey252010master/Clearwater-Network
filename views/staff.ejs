@@ -69,7 +69,6 @@
         <option value="Kick">Kick</option>
         <option value="Ban">Ban</option>
         <option value="Active Ban Bolo">Active Ban Bolo</option>
-        <option value="Completed Ban Bolo">Completed Ban Bolo</option>
       </select>
     </div>
 
@@ -80,14 +79,17 @@
 
         <div class="log-card 
           <%= log.type === 'Active Ban Bolo' ? 'active-bolo' : '' %>
-          <%= log.type === 'Completed Ban Bolo' ? 'completed-bolo' : '' %>"
+         <%= log.completed ? 'completed-bolo' : '' %> "
           style="<%= log.pinned ? 'border-color:#ffcc00;background:#2a2d31;' : '' %>">
 
           <% if (log.pinned) { %>
             <div class="log-type" style="background:#ffcc00;color:black;">PINNED — AUTOMATION</div>
           <% } else { %>
             <div class="log-header">
-              <span class="log-type"><%= log.type %></span>
+              <span class="log-type">
+  <%= log.type %>
+  <% if (log.completed) { %> (Completed) <% } %>
+</span>
             </div>
           <% } %>
 

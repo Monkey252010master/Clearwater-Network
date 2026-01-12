@@ -6,6 +6,7 @@ const expressLayouts = require('express-ejs-layouts');
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
@@ -58,9 +59,16 @@ function saveLogs(logs) {
 // PASSPORT + SESSION
 // --------------------------------------------------
 app.use(session({
+  store: new SQLiteStore({
+    db: 'sessions.sqlite',
+    dir: './data'
+  }),
   secret: 'supersecretkey',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  }
 }));
 
 app.use(passport.initialize());
@@ -272,9 +280,13 @@ app.post('/staff/complete-log/:index', requireStaff, (req, res) => {
 
     // Only convert active BOLOs
     if (log.type === "Active Ban Bolo") {
-      log.type = "Completed Ban Bolo";
-      log.completed = true;
-      log.pinned = false;
+    log.type = "Ban"; // treat completed BOLO as a ban
+log.completed = true;
+log.pinned = false;
+
+log.completedBy = req.user.username;
+log.completedById = req.user.id;
+log.completedAt = new Date().toLocaleString();
 
       log.completedBy = req.user.username;
       log.completedById = req.user.id;

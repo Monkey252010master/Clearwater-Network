@@ -18,6 +18,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "connect-sqlite3": "^0.9.16",
     "discord.js": "^14.25.1",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
