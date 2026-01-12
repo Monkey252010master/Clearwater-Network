@@ -267,7 +267,7 @@ app.post('/staff/delete-log/:index', requireStaff, (req, res) => {
     saveLogs(logs);
   }
 
-  res.redirect('/staff');
+  res.redirect('/');
 });
 
 // STAFF: COMPLETE LOG (Active Ban Bolo -> Ban)
@@ -301,8 +301,8 @@ app.get(
   '/auth/discord/callback',
   passport.authenticate('discord', { failureRedirect: '/' }),
   async (req, res) => {
-    if (await isUserStaff(req.user.id)) return res.redirect('/staff');
-    if (await isUserCAD(req.user.id)) return res.redirect('/cad');
+    if (await isUserStaff(req.user.id)) return res.redirect('/');
+    if (await isUserCAD(req.user.id)) return res.redirect('/');
     res.redirect('/');
   }
 );

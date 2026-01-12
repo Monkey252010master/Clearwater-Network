@@ -14,8 +14,11 @@
   <img src="/images/farm-icon.png" class="nav-logo-icon">
   Clearwater Network
 </a>
-      <a href="/" class="nav-logo">Clearwater Network</a>
       <a href="/cad" class="nav-link">CAD</a>
+
+      <% if (hasCAD) { %>
+        <a href="/cad" class="nav-link">CAD System</a>
+      <% } %>
 
       <% if (isStaff) { %>
         <a href="/staff" class="nav-link">Staff Dashboard</a>
