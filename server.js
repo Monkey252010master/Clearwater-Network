@@ -254,8 +254,14 @@ app.get('/cad', requireCAD, (req, res) => {
 });
 
 // STAFF DASHBOARD
-app.get('/staff', requireStaff, (req, res) => {
-  let logs = loadLogs();
+app.get('/staff', requireStaff, async (req, res) => {
+  const logs = await getRecentLogs(50);
+
+  res.render('staff', {
+    title: 'Staff Dashboard',
+    logs
+  });
+});
 
   // Pinned logs first
   logs.sort((a, b) => {
@@ -268,31 +274,22 @@ app.get('/staff', requireStaff, (req, res) => {
     title: 'Staff Dashboard',
     logs
   });
-});
 
 // STAFF: CREATE LOG
-app.post('/staff/create-log', requireStaff, (req, res) => {
-  let logs = loadLogs();
+app.post('/staff/create-log', requireStaff, async (req, res) => {
+  const { targetId, targetName, action, reason } = req.body;
 
-  const newLog = {
-    moderator: req.user.username,
-    moderatorId: req.user.id,
-    moderatorAvatar: req.user.avatar,
+  await createLog({
+    staffDiscordId: req.user.id,
+    staffName: req.user.username,
+    targetDiscordId: targetId,
+    targetName,
+    action,
+    reason
+  });
 
-    username: req.body.username,
-    robloxId: req.body.robloxId || "Unknown",
-    type: req.body.type,
-    reason: req.body.reason,
-    previous: Number(req.body.previous) || 0,
-    created: new Date().toLocaleString(),
-    pinned: false,
-    completed: false,
-    completedBy: null,
-    completedById: null,
-    completedAt: null
-  };
-
-  logs.unshift(newLog);
+  res.redirect('/staff');
+});
 
   // Count previous logs for this user (non-automation logs)
   const previousCount = logs.filter(
@@ -327,19 +324,12 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
 
   saveLogs(logs);
   res.redirect('/staff');
-});
+
 
 // STAFF: DELETE LOG
-app.post('/staff/delete-log/:index', requireHR, (req, res) => {
-  const index = parseInt(req.params.index);
-  const logs = loadLogs();
-
-  if (index >= 0 && index < logs.length) {
-    logs.splice(index, 1);
-    saveLogs(logs);
-  }
-
-  res.redirect('/');
+app.post('/staff/delete-log/:id', requireHR, async (req, res) => {
+  await deleteLogById(req.params.id);
+  res.redirect('/staff');
 });
 
 // STAFF: COMPLETE LOG (Active Ban Bolo -> Ban)
@@ -378,6 +368,18 @@ app.get(
     res.redirect('/');
   }
 );
+
+// HR
+app.get('/hr', requireHR, (req, res) => {
+  const activity = loadActivity().slice(0, 50);
+  const logs = loadLogs();
+
+  res.render('hr', {
+    title: 'HR Dashboard',
+    activity,
+    logs
+  });
+});
 
 // LOGOUT
 app.get('/logout', (req, res) => {

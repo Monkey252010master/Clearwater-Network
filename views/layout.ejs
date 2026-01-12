@@ -22,11 +22,12 @@
       <% if (isStaff) { %>
         <a href="/staff" class="nav-link">Staff Dashboard</a>
       <% } %>
-    </div>
 
-    <% if (isHR) { %>
-  <li><a href="/hr">HR Dashboard</a></li>
-<% } %>
+      <% if (isHR) { %>
+        <li><a href="/hr">HR Dashboard</a></li>
+      <% } %>
+
+    </div>
 
     <div class="nav-right">
   <% if (!user) { %>
