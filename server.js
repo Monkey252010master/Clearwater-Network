@@ -177,6 +177,15 @@ async function requireCAD(req, res, next) {
   next();
 }
 
+async function requireHR(req, res, next) {
+  if (!req.isAuthenticated()) return res.redirect('/auth/discord');
+
+  const hr = await isUserHR(req.user.id);
+  if (!hr) return res.render('noaccess', { title: 'Access Denied' });
+
+  next();
+}
+
 // ⭐ THIS is the missing part — your global middleware
 app.use(async (req, res, next) => {
   res.locals.user = req.user;
