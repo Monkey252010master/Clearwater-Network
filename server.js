@@ -158,6 +158,7 @@ async function isUserCAD(discordId) {
 // --------------------------------------------------
 // MIDDLEWARE
 // --------------------------------------------------
+
 async function requireStaff(req, res, next) {
   if (!req.isAuthenticated()) return res.redirect('/auth/discord');
 
@@ -176,13 +177,21 @@ async function requireCAD(req, res, next) {
   next();
 }
 
-res.locals.isHR = false;
+// ⭐ THIS is the missing part — your global middleware
+app.use(async (req, res, next) => {
+  res.locals.user = req.user;
+  res.locals.isStaff = false;
+  res.locals.hasCAD = false;
+  res.locals.isHR = false;
 
-if (req.user) {
-  res.locals.isStaff = await isUserStaff(req.user.id);
-  res.locals.hasCAD = await isUserCAD(req.user.id);
-  res.locals.isHR = await isUserHR(req.user.id);
-}
+  if (req.user) {
+    res.locals.isStaff = await isUserStaff(req.user.id);
+    res.locals.hasCAD = await isUserCAD(req.user.id);
+    res.locals.isHR = await isUserHR(req.user.id);
+  }
+
+  next();
+});
 
 // --------------------------------------------------
 // GLOBAL EJS VARIABLES
