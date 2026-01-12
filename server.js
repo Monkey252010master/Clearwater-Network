@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 const app = express();
+const { createLog, getRecentLogs, deleteLogById } = require('./utils/logs');
 
 // Needed to read POST form data
 app.use(express.urlencoded({ extended: true }));
@@ -301,7 +302,7 @@ app.get(
 
 // HR
 app.get('/hr', requireHR, async (req, res) => {
-  const activity = loadActivity().slice(0, 50); // still JSON for now
+  const activity = loadActivity().slice(0, 50);
   const logs = await getRecentLogs(200);
 
   res.render('hr', {
