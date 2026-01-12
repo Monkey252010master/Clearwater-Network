@@ -56,6 +56,39 @@ function saveLogs(logs) {
 }
 
 // --------------------------------------------------
+// STAFF ACTIVITY STORAGE
+// --------------------------------------------------
+function getActivityFilePath() {
+  return path.join(__dirname, 'data', 'activity.json');
+}
+
+function loadActivity() {
+  const filePath = getActivityFilePath();
+  if (!fs.existsSync(filePath)) return [];
+  const raw = fs.readFileSync(filePath);
+  return JSON.parse(raw);
+}
+
+function saveActivity(activity) {
+  const filePath = getActivityFilePath();
+  fs.writeFileSync(filePath, JSON.stringify(activity, null, 2));
+}
+
+function addActivity(user, action) {
+  const activity = loadActivity();
+
+  activity.unshift({
+    user: user.username,
+    userId: user.id,
+    avatar: user.avatar,
+    action,
+    time: new Date().toLocaleString()
+  });
+
+  saveActivity(activity);
+}
+
+// --------------------------------------------------
 // SESSION (MUST COME BEFORE PASSPORT)
 // --------------------------------------------------
 app.use(session({
@@ -141,6 +174,14 @@ async function requireCAD(req, res, next) {
   if (!cadAccess) return res.render('noaccess', { title: 'Access Denied' });
 
   next();
+}
+
+res.locals.isHR = false;
+
+if (req.user) {
+  res.locals.isStaff = await isUserStaff(req.user.id);
+  res.locals.hasCAD = await isUserCAD(req.user.id);
+  res.locals.isHR = await isUserHR(req.user.id);
 }
 
 // --------------------------------------------------
@@ -258,7 +299,7 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
 });
 
 // STAFF: DELETE LOG
-app.post('/staff/delete-log/:index', requireStaff, (req, res) => {
+app.post('/staff/delete-log/:index', requireHR, (req, res) => {
   const index = parseInt(req.params.index);
   const logs = loadLogs();
 

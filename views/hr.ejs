@@ -1,0 +1,33 @@
+<div class="hr-container">
+  <h1>HR Dashboard</h1>
+
+  <section class="hr-section">
+    <h2>Recent Staff Activity</h2>
+
+    <% if (activity.length === 0) { %>
+      <p>No recent activity.</p>
+    <% } else { %>
+      <ul class="activity-list">
+        <% activity.forEach(a => { %>
+          <li class="activity-item">
+            <strong><%= a.user %></strong> <%= a.action %>
+            <span class="time"><%= a.time %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<% logs.forEach((log, index) => { %>
+  <div class="log-item">
+    <strong><%= log.username %></strong> — <%= log.type %>
+    <span><%= log.created %></span>
+
+    <% if (isHR) { %>
+      <form action="/staff/delete-log/<%= index %>" method="POST">
+        <button class="btn secondary" style="background:#d83c3e;color:white;">Delete</button>
+      </form>
+    <% } %>
+  </div>
+<% }) %>

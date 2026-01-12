@@ -24,6 +24,10 @@
       <% } %>
     </div>
 
+    <% if (isHR) { %>
+  <li><a href="/hr">HR Dashboard</a></li>
+<% } %>
+
     <div class="nav-right">
   <% if (!user) { %>
     <a href="/auth/discord" class="discord-login-btn">

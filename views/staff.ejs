@@ -126,9 +126,11 @@
           </div>
 
           <!-- DELETE BUTTON -->
-          <form action="/staff/delete-log/<%= index %>" method="POST" style="margin-top:10px;">
-            <button class="btn secondary" style="background:#d83c3e;color:white;">Delete</button>
-          </form>
+          <% if (isHR) { %>
+  <form action="/staff/delete-log/<%= index %>" method="POST" style="margin-top:10px;">
+    <button class="btn secondary" style="background:#d83c3e;color:white;">Delete</button>
+  </form>
+<% } %>
 
           <!-- COMPLETE BUTTON (only for active BOLOs) -->
           <% if (log.type === "Active Ban Bolo") { %>
