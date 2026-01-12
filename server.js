@@ -56,35 +56,42 @@ function saveLogs(logs) {
 }
 
 // --------------------------------------------------
-// PASSPORT + SESSION
+// SESSION (MUST COME BEFORE PASSPORT)
 // --------------------------------------------------
-app.use(session({
-  store: new SQLiteStore({
-    db: 'sessions.sqlite',
-    dir: './data'
-  }),
-  secret: 'supersecretkey',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  }
-}));
+app.use(
+  session({
+    store: new SQLiteStore({
+      db: 'sessions.sqlite',
+      dir: './data'
+    }),
+    secret: 'supersecretkey',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    }
+  })
+);
 
+// --------------------------------------------------
+// PASSPORT
+// --------------------------------------------------
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new DiscordStrategy(
-  {
-    clientID: config.clientID,
-    clientSecret: config.clientSecret,
-    callbackURL: config.callbackURL,
-    scope: ['identify']
-  },
-  function (accessToken, refreshToken, profile, done) {
-    return done(null, profile);
-  }
-));
+passport.use(
+  new DiscordStrategy(
+    {
+      clientID: config.clientID,
+      clientSecret: config.clientSecret,
+      callbackURL: config.callbackURL,
+      scope: ['identify']
+    },
+    function (accessToken, refreshToken, profile, done) {
+      return done(null, profile);
+    }
+  )
+);
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
@@ -194,16 +201,15 @@ app.get('/staff', requireStaff, (req, res) => {
   });
 });
 
-// STAFF: CREATE LOG (with auto-ban + pinned automation)
+// STAFF: CREATE LOG
 app.post('/staff/create-log', requireStaff, (req, res) => {
   let logs = loadLogs();
 
   const newLog = {
-    moderator: req.body.staffDiscord || (req.user && req.user.username) || "Unknown",
-    moderatorId: req.user ? req.user.id : null,
-    moderatorAvatar: req.user ? req.user.avatar : null,
+    moderator: req.user.username,
+    moderatorId: req.user.id,
+    moderatorAvatar: req.user.avatar,
 
-    staffRoblox: req.body.staffRoblox || "Unknown",
     username: req.body.username,
     robloxId: req.body.robloxId || "Unknown",
     type: req.body.type,
@@ -217,7 +223,6 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
     completedAt: null
   };
 
-  // Save the normal log
   logs.unshift(newLog);
 
   // Count previous logs for this user (non-automation logs)
@@ -228,14 +233,13 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
       log.moderator !== "Automation"
   ).length;
 
-  // If they hit 3 or more logs → auto-ban BOLO
+  // Auto-ban BOLO
   if (previousCount >= 3) {
     const autoLog = {
       moderator: "Automation",
       moderatorId: null,
       moderatorAvatar: null,
 
-      staffRoblox: "System",
       username: newLog.username,
       robloxId: newLog.robloxId,
       type: "Active Ban Bolo",
@@ -249,7 +253,6 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
       completedAt: null
     };
 
-    // Insert pinned log at very top
     logs.unshift(autoLog);
   }
 
@@ -270,7 +273,7 @@ app.post('/staff/delete-log/:index', requireStaff, (req, res) => {
   res.redirect('/staff');
 });
 
-// STAFF: COMPLETE LOG (Active Ban Bolo -> Completed Ban Bolo)
+// STAFF: COMPLETE LOG (Active Ban Bolo -> Ban)
 app.post('/staff/complete-log/:index', requireStaff, (req, res) => {
   const index = parseInt(req.params.index);
   const logs = loadLogs();
@@ -278,15 +281,10 @@ app.post('/staff/complete-log/:index', requireStaff, (req, res) => {
   if (index >= 0 && index < logs.length) {
     const log = logs[index];
 
-    // Only convert active BOLOs
     if (log.type === "Active Ban Bolo") {
-    log.type = "Ban"; // treat completed BOLO as a ban
-log.completed = true;
-log.pinned = false;
-
-log.completedBy = req.user.username;
-log.completedById = req.user.id;
-log.completedAt = new Date().toLocaleString();
+      log.type = "Ban";
+      log.completed = true;
+      log.pinned = false;
 
       log.completedBy = req.user.username;
       log.completedById = req.user.id;
