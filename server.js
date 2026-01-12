@@ -302,7 +302,7 @@ app.get(
 
 // HR
 app.get('/hr', requireHR, async (req, res) => {
-  const activity = loadActivity().slice(0, 50);
+  const activity = loadActivity().slice(0, 50); // still JSON for now
   const logs = await getRecentLogs(200);
 
   res.render('hr', {
