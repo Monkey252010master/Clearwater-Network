@@ -1,2 +1,35 @@
-<h1>Welcome to Clearwater Network</h1>
-<p>Your gateway to the ultimate role-playing experience.</p>
+<div class="homepage-wrap">
+  <section class="hero-card">
+    <h1>Welcome to <span class="highlight">Clearwater Network</span></h1>
+    <p>Your gateway to the ultimate role-playing experience.</p>
+    <div class="hero-buttons">
+      <% if (!user) { %>
+        <a href="/auth/discord" class="discord-login-btn">
+          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord Logo">
+          <span>Login with Discord</span>
+        </a>
+      <% } else { %>
+        <a href="/cad" class="btn cad-btn">Enter CAD System</a>
+        <% if (isStaff) { %>
+          <a href="/staff" class="btn primary">Staff Dashboard</a>
+        <% } %>
+        <a href="/logout" class="btn logout-btn">Logout</a>
+      <% } %>
+    </div>
+  </section>
+
+  <section class="info-grid">
+    <div class="info-card">
+      <h3>Realistic Roleplay</h3>
+      <p>Built for immersive scenarios, accurate dispatching, and responsive staff tools.</p>
+    </div>
+    <div class="info-card">
+      <h3>Live CAD Integration</h3>
+      <p>Track units, calls, and incidents in real time with our custom CAD system.</p>
+    </div>
+    <div class="info-card">
+      <h3>Staff Automation</h3>
+      <p>Auto-ban BOLOs, log tracking, and smart moderation tools built for speed.</p>
+    </div>
+  </section>
+</div>

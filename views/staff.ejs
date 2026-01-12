@@ -85,11 +85,31 @@
             <p><strong>Reason:</strong> <%= log.reason %></p>
             <p><strong>Previous Punishments:</strong> <%= log.previous %></p>
             <p class="timestamp"><%= log.created %></p>
+
+            <% if (log.completed) { %>
+              <p class="completed-info">
+                Completed by <strong><%= log.completedBy %></strong> at <%= log.completedAt %>
+              </p>
+            <% } %>
           </div>
 
           <div class="log-footer">
-            • Submitted by <strong><%= log.moderator %></strong>
-            (Roblox: <%= log.staffRoblox || 'Unknown' %>)
+            <% if (log.moderator === 'Automation') { %>
+              <span class="log-avatar-circle">🤖</span>
+            <% } else if (log.moderatorId && log.moderatorAvatar) { %>
+              <img
+                class="log-avatar"
+                src="https://cdn.discordapp.com/avatars/<%= log.moderatorId %>/<%= log.moderatorAvatar %>.png"
+                onerror="this.style.display='none';"
+              />
+            <% } %>
+
+            <div class="log-footer-text">
+              <span>
+                Submitted by <strong><%= log.moderator %></strong>
+                (Roblox: <%= log.staffRoblox || 'Unknown' %>)
+              </span>
+            </div>
           </div>
 
           <!-- DELETE BUTTON -->

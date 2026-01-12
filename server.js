@@ -54,12 +54,6 @@ function saveLogs(logs) {
   fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
 }
 
-function saveLog(newLog) {
-  const logs = loadLogs();
-  logs.unshift(newLog); // newest first
-  saveLogs(logs);
-}
-
 // --------------------------------------------------
 // PASSPORT + SESSION
 // --------------------------------------------------
@@ -177,7 +171,15 @@ app.get('/cad', requireCAD, (req, res) => {
 
 // STAFF DASHBOARD
 app.get('/staff', requireStaff, (req, res) => {
-  const logs = loadLogs();
+  let logs = loadLogs();
+
+  // Pinned logs first
+  logs.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return 0;
+  });
+
   res.render('staff', {
     title: 'Staff Dashboard',
     logs
@@ -190,6 +192,9 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
 
   const newLog = {
     moderator: req.body.staffDiscord || (req.user && req.user.username) || "Unknown",
+    moderatorId: req.user ? req.user.id : null,
+    moderatorAvatar: req.user ? req.user.avatar : null,
+
     staffRoblox: req.body.staffRoblox || "Unknown",
     username: req.body.username,
     robloxId: req.body.robloxId || "Unknown",
@@ -198,13 +203,16 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
     previous: Number(req.body.previous) || 0,
     created: new Date().toLocaleString(),
     pinned: false,
-    completed: false
+    completed: false,
+    completedBy: null,
+    completedById: null,
+    completedAt: null
   };
 
   // Save the normal log
   logs.unshift(newLog);
 
-  // Count previous logs (non-automation) for this user
+  // Count previous logs for this user (non-automation logs)
   const previousCount = logs.filter(
     log =>
       log.username &&
@@ -216,6 +224,9 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
   if (previousCount >= 3) {
     const autoLog = {
       moderator: "Automation",
+      moderatorId: null,
+      moderatorAvatar: null,
+
       staffRoblox: "System",
       username: newLog.username,
       robloxId: newLog.robloxId,
@@ -224,7 +235,10 @@ app.post('/staff/create-log', requireStaff, (req, res) => {
       previous: previousCount,
       created: new Date().toLocaleString(),
       pinned: true,
-      completed: false
+      completed: false,
+      completedBy: null,
+      completedById: null,
+      completedAt: null
     };
 
     // Insert pinned log at very top
@@ -260,7 +274,11 @@ app.post('/staff/complete-log/:index', requireStaff, (req, res) => {
     if (log.type === "Active Ban Bolo") {
       log.type = "Completed Ban Bolo";
       log.completed = true;
-      log.pinned = false; // unpin if it was pinned
+      log.pinned = false;
+
+      log.completedBy = req.user.username;
+      log.completedById = req.user.id;
+      log.completedAt = new Date().toLocaleString();
     }
   }
 
