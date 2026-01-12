@@ -155,6 +155,18 @@ async function isUserCAD(discordId) {
   }
 }
 
+async function isUserHR(discordId) {
+  try {
+    const guild = await client.guilds.fetch(config.guildID);
+    const member = await guild.members.fetch(discordId);
+
+    return member.roles.cache.has(config.hrRoleID);
+  } catch (err) {
+    console.error('Error checking HR role:', err);
+    return false;
+  }
+}
+
 // --------------------------------------------------
 // MIDDLEWARE
 // --------------------------------------------------
