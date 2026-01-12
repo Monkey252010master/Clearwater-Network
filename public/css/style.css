@@ -482,3 +482,39 @@ textarea {
   font-size: 0.95em;
   color: #ccc;
 }
+
+.log-filter {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.log-filter label {
+  font-size: 14px;
+  color: #bfc4cc;
+}
+
+.log-filter select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #1a1d21;
+  border: 1px solid #2a2d31;
+  color: #e6e6e6;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #00bfff;
+  text-decoration: none;
+}
+
+.nav-logo-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}

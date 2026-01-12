@@ -48,8 +48,7 @@
       <label>Previous Punishments</label>
       <input name="previous" id="previousInput" type="number" value="0" readonly />
 
-      <label>Your Roblox Name</label>
-      <input name="staffRoblox" type="text" placeholder="Enter your Roblox username" required />
+      <!-- REMOVED STAFF ROBLOX NAME FIELD -->
 
       <input type="hidden" name="staffDiscord" value="<%= user.username %>" />
 
@@ -60,6 +59,19 @@
   <!-- RIGHT COLUMN -->
   <section class="staff-column staff-right modern-card">
     <h2>Punishment Logs</h2>
+
+    <!-- TYPE FILTER DROPDOWN -->
+    <div class="log-filter">
+      <label for="typeFilter">Type:</label>
+      <select id="typeFilter">
+        <option value="all">All</option>
+        <option value="Warning">Warning</option>
+        <option value="Kick">Kick</option>
+        <option value="Ban">Ban</option>
+        <option value="Active Ban Bolo">Active Ban Bolo</option>
+        <option value="Completed Ban Bolo">Completed Ban Bolo</option>
+      </select>
+    </div>
 
     <input type="text" class="search-bar" placeholder="Search logs..." />
 
@@ -107,7 +119,6 @@
             <div class="log-footer-text">
               <span>
                 Submitted by <strong><%= log.moderator %></strong>
-                (Roblox: <%= log.staffRoblox || 'Unknown' %>)
               </span>
             </div>
           </div>
@@ -174,6 +185,23 @@
     logCards.forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // TYPE FILTER
+  const typeFilter = document.getElementById('typeFilter');
+
+  typeFilter.addEventListener('change', () => {
+    const selected = typeFilter.value.toLowerCase();
+
+    document.querySelectorAll('.log-card').forEach(card => {
+      const typeText = card.querySelector('.log-type').innerText.toLowerCase();
+
+      if (selected === 'all' || typeText.includes(selected)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
     });
   });
 </script>
